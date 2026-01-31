@@ -1,0 +1,7 @@
+{
+  "name": "FRIDEC - Asistente SAT",
+  "description": "Demo de asistente de voz para atención técnica de FRIDEC Refrigeración Industrial.",
+  "requestFramePermissions": [
+    "microphone"
+  ]
+}
