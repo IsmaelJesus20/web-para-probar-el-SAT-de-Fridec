@@ -16,6 +16,7 @@ const VapiController: React.FC = () => {
   const [status, setStatus] = useState<CallStatus>('idle');
   const [isSpeaking, setIsSpeaking] = useState<boolean>(false);
   const [isVapiReady, setIsVapiReady] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
   const vapiInstance = useRef<any>(null);
 
   // Cargar el script de Vapi dinámicamente
@@ -39,6 +40,7 @@ const VapiController: React.FC = () => {
 
       // Eventos de llamada
       vapi.on('call-start', () => {
+        setError(null);
         setStatus('active');
         setIsSpeaking(false);
       });
@@ -59,9 +61,14 @@ const VapiController: React.FC = () => {
 
       vapi.on('error', (e: any) => {
         console.error("Vapi Error:", e);
+        const errorMsg = e?.message || e?.error?.message || 'Error de conexión con el asistente';
+        setError(errorMsg);
         setStatus('idle');
         setIsSpeaking(false);
       });
+    } else {
+      console.error("Vapi SDK not found on window");
+      setError("No se pudo cargar el SDK de VAPI");
     }
   };
 
@@ -77,15 +84,21 @@ const VapiController: React.FC = () => {
   }, [loadVapiScript]);
 
   const handleToggleCall = async () => {
-    if (!vapiInstance.current) return;
+    if (!vapiInstance.current) {
+      setError("VAPI no está listo. Recarga la página.");
+      return;
+    }
+
+    setError(null); // Limpiar errores anteriores
 
     if (status === 'idle') {
       setStatus('connecting');
       try {
         // Iniciar llamada real
-        vapiInstance.current.start(VAPI_ASSISTANT_ID);
-      } catch (err) {
+        await vapiInstance.current.start(VAPI_ASSISTANT_ID);
+      } catch (err: any) {
         console.error("Error starting call", err);
+        setError(err?.message || "Error al iniciar la llamada. Verifica los permisos del micrófono.");
         setStatus('idle');
       }
 
@@ -93,8 +106,8 @@ const VapiController: React.FC = () => {
       setStatus('ending');
       try {
         // Terminar llamada real
-        vapiInstance.current.stop();
-      } catch (err) {
+        await vapiInstance.current.stop();
+      } catch (err: any) {
         console.error("Error stopping call", err);
         setStatus('idle');
       }
@@ -159,10 +172,16 @@ const VapiController: React.FC = () => {
       </div>
 
       {/* Helper Text */}
-      <div className="h-6 mt-4">
-        <p className={`text-sm font-medium text-slate-400 transition-opacity duration-300 ${status === 'idle' ? 'opacity-100' : 'opacity-0'}`}>
-          Pulsa para empezar conversación
-        </p>
+      <div className="min-h-[24px] mt-4 text-center">
+        {error ? (
+          <p className="text-sm font-medium text-red-400">{error}</p>
+        ) : status === 'connecting' ? (
+          <p className="text-sm font-medium text-yellow-400">Conectando... Permite el micrófono</p>
+        ) : status === 'active' ? (
+          <p className="text-sm font-medium text-green-400">Llamada activa - Habla con el asistente</p>
+        ) : (
+          <p className="text-sm font-medium text-slate-400">Pulsa para empezar conversación</p>
+        )}
       </div>
 
     </div>
