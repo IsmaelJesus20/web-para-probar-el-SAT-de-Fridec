@@ -9,8 +9,8 @@ import { CallStatus } from '../types';
 // 2. Copia tu Public Key de la sección Account/Org
 // 3. Copia el ID del Asistente que quieres usar
 // ==========================================
-const VAPI_PUBLIC_KEY = "TU_PUBLIC_KEY_AQUI"; 
-const VAPI_ASSISTANT_ID = "TU_ASSISTANT_ID_AQUI"; 
+const VAPI_PUBLIC_KEY = "44134459-dc05-495e-a0a8-641860eb485e"; 
+const VAPI_ASSISTANT_ID = "2960c98a-b055-4e0f-8680-a58a5a6d8d9b"; 
 
 const VapiController: React.FC = () => {
   const [status, setStatus] = useState<CallStatus>('idle');
